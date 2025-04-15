@@ -2,22 +2,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const startWorkoutBtn = document.getElementById('start-workout');
     const pauseWorkoutBtn = document.getElementById('pause-workout');
     const stopWorkoutBtn = document.getElementById('stop-workout');
-    const workoutDisplay = document.getElementById('workout-display');
     const currentExerciseDisplay = document.getElementById('current-exercise');
     const timerDisplay = document.getElementById('timer-display');
     const progressBar = document.getElementById('progress-bar');
     const setInfoDisplay = document.getElementById('set-info');
-    
-    const startSound = document.getElementById('start-sound');
-    const restSound = document.getElementById('rest-sound');
-    const finishSound = document.getElementById('finish-sound');
+    const upcomingExercisesList = document.getElementById('upcoming-exercises');
     
     let workoutInterval;
     let currentTime = 0;
     let isPaused = false;
     let currentWorkout = null;
-    let currentSet = 1;
-    let currentExerciseIndex = 0;
     let isResting = false;
     
     startWorkoutBtn.addEventListener('click', function() {
@@ -42,11 +36,24 @@ document.addEventListener('DOMContentLoaded', function() {
             currentExerciseIndex: 0
         };
         
-        startWorkoutBtn.style.display = 'none';
-        workoutDisplay.style.display = 'block';
+        // Update upcoming exercises list
+        updateUpcomingExercises();
         
         startSet();
     });
+    
+    function updateUpcomingExercises() {
+        upcomingExercisesList.innerHTML = '';
+        const exercisesForSet = [...currentWorkout.exercises];
+        
+        // Add exercises for current set
+        exercisesForSet.forEach((exercise, index) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = `${index + 1}. ${exercise}`;
+            upcomingExercisesList.appendChild(li);
+        });
+    }
     
     pauseWorkoutBtn.addEventListener('click', function() {
         if (isPaused) {
@@ -62,8 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     stopWorkoutBtn.addEventListener('click', function() {
         clearInterval(workoutInterval);
-        workoutDisplay.style.display = 'none';
-        startWorkoutBtn.style.display = 'block';
+        currentExerciseDisplay.textContent = "Workout Stopped";
+        timerDisplay.textContent = "00:00";
+        progressBar.style.width = "0%";
+        setInfoDisplay.textContent = "";
         currentWorkout = null;
     });
     
@@ -107,8 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
-        startSound.play();
     }
     
     function startRest() {
@@ -117,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
         startTimer(currentWorkout.restTime, function() {
             startExercise();
         });
-        restSound.play();
     }
     
     function startRestBetweenSets() {
@@ -127,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
             currentWorkout.currentSet++;
             startSet();
         });
-        restSound.play();
     }
     
     function startTimer(duration, callback) {
@@ -178,11 +183,5 @@ document.addEventListener('DOMContentLoaded', function() {
         timerDisplay.textContent = "00:00";
         progressBar.style.width = "100%";
         setInfoDisplay.textContent = "";
-        finishSound.play();
-        
-        setTimeout(function() {
-            workoutDisplay.style.display = 'none';
-            startWorkoutBtn.style.display = 'block';
-        }, 5000);
     }
 });
